@@ -12,6 +12,10 @@ const isFileAvailable = async (dir: string, filename: string): Promise<boolean> 
     throw new Error('Access to the directory is not allowed');
   }
 
+  if (filename.includes('/') || filename.includes('\\') || path.isAbsolute(filename)) {
+    throw new Error('Invalid filename');
+  }
+
   try {
     // Read the directory contents and check if the file exists
     const files = await fs.readdir(normalizedDir);
