@@ -6,7 +6,7 @@ const isFileAvailable = async (dir: string, filename: string): Promise<boolean> 
 
 
   // Составляем полный путь к файлу
-  const filePath: string = path.join(dir, filename);
+  const filePath: string = path.join(path.resolve(dir), filename);
 
   try {
     // Проверяем, существует ли файл
