@@ -22,8 +22,8 @@ if (
 
 
   try {
-    // Проверяем, существует ли файл
-    await fs.stat(path.join(dir, filename));
+    const filePath = path.join(dir, filename);
+    await fs.stat(filePath); // test 33
     return true;
   } catch (e) {
     return false;
