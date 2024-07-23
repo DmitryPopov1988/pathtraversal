@@ -1,24 +1,19 @@
 import path from 'path';
+import { QUESTION_CONTENT } from '@core/services/constants';
 
 const isFileAvailable = async (
   dir: string,
   filename: string,
 ): Promise<boolean> => {
+  const normalizedPath = path.resolve(dir, filename);
+  const baseDirectory = path.resolve(__dirname, QUESTION_CONTENT.RELATIVE_URL);
+  if (!normalizedPath.startsWith(baseDirectory)) {
+    throw new Error('Invalid path specified.');
+  }
   try {
-    // Нормализуем путь
-    const normalizedPath = path.resolve(dir, filename);
-
-    // Убедитесь, что путь не выходит за пределы допустимой директории
-    const baseDirectory = path.resolve(__dirname, 'allowed_directory'); // Замените на вашу допустимую директорию
-    if (!normalizedPath.startsWith(baseDirectory)) {
-      throw new Error('Invalid path');
-    }
-
-    // Динамический импорт
     await import(normalizedPath);
     return true;
   } catch (e) {
-    console.error('File not available:', e.message);
     return false;
   }
 };
