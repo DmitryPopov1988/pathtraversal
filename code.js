@@ -30,7 +30,10 @@ const isFileAvailable = async (
     verifyDirectory(dir);
     verifyFilename(filename);
     const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
-    const filePAth = path.resolve(dir, sanitizedFilename);
+    const filePAth = path.resolve(
+      QUESTION_CONTENT.RELATIVE_URL,
+      sanitizedFilename,
+    );
 
     await fs.stat(filePAth);
     return true;
