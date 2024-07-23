@@ -1,16 +1,31 @@
 import fs from 'fs/promises';
+import path from 'path';
 import { QUESTION_CONTENT } from '@core/services/constants';
 
-const ALLOWED_PATH = QUESTION_CONTENT.RELATIVE_URL;
-
-const sanitize = (fileName: string) => {
-  if (fileName.includes('..')) throw new Error('Invalid file name.');
-  return fileName;
+const verifyDirectory = (dir: string) => {
+  if (!dir.startsWith(QUESTION_CONTENT.RELATIVE_URL)) {
+    throw new Error('PATH');
+  }
 };
 
-const isFileAvailable = async (filename: string): Promise<boolean> => {
+const verifyFilename = (filename: string) => {
+  if (
+    filename.includes('..') ||
+    filename.includes('/') ||
+    filename.includes('\\')
+  ) {
+    throw new Error('FILE');
+  }
+};
+
+const isFileAvailable = async (
+  dir: string,
+  filename: string,
+): Promise<boolean> => {
   try {
-    await fs.stat(ALLOWED_PATH + sanitize(filename));
+    verifyDirectory(dir);
+    verifyFilename(filename);
+    await fs.stat(path.join(dir, filename));
     return true;
   } catch (e) {
     return false;
@@ -18,4 +33,3 @@ const isFileAvailable = async (filename: string): Promise<boolean> => {
 };
 
 export default { isFileAvailable };
-
