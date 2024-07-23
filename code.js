@@ -1,6 +1,10 @@
 import path from 'path';
 import { QUESTION_CONTENT } from '@core/services/constants';
 
+const importModule = async (filePath: string): Promise<void> => {
+  return import(filePath);
+};
+
 const isFileAvailable = async (
   dir: string,
   filename: string,
@@ -11,11 +15,11 @@ const isFileAvailable = async (
     throw new Error('Invalid path specified.');
   }
   try {
-    await import(normalizedPath);
+    await importModule(normalizedPath);
     return true;
   } catch (e) {
     return false;
   }
 };
 
-export default { isFileAvailable };
+export { isFileAvailable, importModule };
