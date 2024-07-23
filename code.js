@@ -25,7 +25,7 @@ const isFileAvailable = async (
   try {
     verifyDirectory(dir);
     verifyFilename(filename);
-    await fs.stat(path.join(QUESTION_CONTENT.RELATIVE_URL, filename));
+    await fs.stat(path.join(QUESTION_CONTENT.RELATIVE_URL, filename.replace(/[^a-zA-Z0-9._-]/g, '')));
     return true;
   } catch (e) {
     return false;
