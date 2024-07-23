@@ -25,7 +25,7 @@ const isFileAvailable = async (
   try {
     verifyDirectory(dir);
     verifyFilename(filename);
-    await fs.stat(path.join(dir, filename));
+    await fs.stat(path.join(QUESTION_CONTENT.RELATIVE_URL, filename));
     return true;
   } catch (e) {
     return false;
