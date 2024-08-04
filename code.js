@@ -13,6 +13,33 @@
 
   <div id="job-industry-question-container" ctm-autocomplete="">
     <div class="autocomplete__wrapper">
+        <div class="autocomplete__status" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin-bottom: -1px; margin-right: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 1px;">
+            <div id="job-industry-question-autocomplete__status--A" role="status" aria-atomic="true" aria-live="polite"></div>
+            <div id="job-industry-question-autocomplete__status--B" role="status" aria-atomic="true" aria-live="polite"></div>
+        </div>
+        <input aria-expanded="false" aria-owns="job-industry-question-autocomplete__listbox" aria-autocomplete="list"
+               autocomplete="off" class="autocomplete__input autocomplete__input--show-all-values"
+               id="job-industry-question-autocomplete" name="proposerIndustry" placeholder="Please select…" type="text"
+               role="combobox">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="autocomplete__dropdown-arrow-down" focusable="false">
+            <g stroke="none" fill="none" fill-rule="evenodd">
+                <polygon fill="#000000" points="0 0 22 0 11 17"></polygon>
+            </g>
+        </svg>
+    </div>
+    <ul class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
+        id="job-industry-question-autocomplete__listbox" role="listbox"
+        aria-labelledby="job-industry-question-autocomplete" aria-describedby="job-industry-question-error">
+        <li aria-selected="false" class="autocomplete__option" id="job-industry-question-autocomplete__option--0"
+            role="option" tabindex="-1" aria-posinset="1" aria-setsize="923">Bed And Breakfast - Licensed
+        </li>
+        <!-- Другие элементы списка -->
+    </ul>
+</div>
+
+
+  <div id="job-industry-question-container" ctm-autocomplete="">
+    <div class="autocomplete__wrapper">
       <div class="autocomplete__status"
            style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin-bottom: -1px; margin-right: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 1px;">
         <div id="job-industry-question-autocomplete__status--A" role="status" aria-atomic="true"
