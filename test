@@ -1,0 +1,18 @@
+<link rel="stylesheet" href="https://unpkg.com/accessible-autocomplete@2.0.4/dist/accessible-autocomplete.min.css">
+<script src="https://unpkg.com/accessible-autocomplete@2.0.4/dist/accessible-autocomplete.min.js"></script>
+<div id="autocomplete-container"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    accessibleAutocomplete({
+      element: document.querySelector('#autocomplete-container'),
+      id: 'my-autocomplete', // идентификатор для input
+      name: 'my-autocomplete',
+      source: ['Option 1', 'Option 2', 'Option 3'],
+      showAllValues: true,
+      autoselect: false,
+      defaultValue: '',
+      placeholder: 'Please select…',
+      displayMenu: 'overlay'
+    });
+  });
+</script>
