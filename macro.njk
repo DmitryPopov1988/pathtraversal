@@ -33,7 +33,27 @@
             {% endcall %}
         {% endfor %}
 
-        <div id="{{id}}-container" ctm-autocomplete></div>
+        <div id="{{id}}-container" ctm-autocomplete>
+            <input
+                id="{{ inputId }}"
+                type="text"
+                aria-expanded="false"
+                aria-controls="{{ inputId }}__listbox"
+                aria-autocomplete="list"
+                placeholder="{{ placeholder }}"
+                class="autocomplete__input autocomplete__input--show-all-values"
+                role="combobox"
+            />
+            <ul
+                id="{{ inputId }}__listbox"
+                class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
+                role="listbox"
+                aria-labelledby="{{ inputId }}"
+                aria-describedby="{{ errorMessageId }}"
+            >
+                <!-- List items will be inserted here by the autocomplete script -->
+            </ul>
+        </div>
 
         {% if errorMessage %}
             <p class="error-message" id="{{ errorMessageId }}">
@@ -50,15 +70,18 @@
                 {{ f.answer | safe }}
             {% endcall %}
         {% endfor %}
+
         <script>
         document.addEventListener("DOMContentLoaded", () => {
           const items = {{ config.options | dump | safe }};
           const autocompleteElement = document.querySelector('#{{ id }}-container');
+          const input = document.querySelector('#{{ inputId }}');
+          const ul = document.querySelector('#{{ inputId }}__listbox');
 
           const init = (defaultValue) => {
             accessibleAutocomplete({
               element: autocompleteElement,
-              id: '{{ inputId }}', // same as labelFor
+              id: '{{ inputId }}',
               name: '{{ config.name }}',
               source: items.map(item => item.displayText),
               showAllValues: true,
@@ -66,20 +89,56 @@
               enhanceSelectElement: false,
               displayMenu: 'overlay',
               defaultValue: defaultValue,
-              placeholder: 'APOLLO-2503 Please select…',
-              menuAttributes: {'aria-labelledby': '{{ inputId }}', 'aria-describedby': '{{ errorMessageId }}'}
+              placeholder: '{{ placeholder }}',
+              menuAttributes: {
+                'aria-labelledby': '{{ inputId }}',
+                'aria-describedby': '{{ errorMessageId }}'
+              },
+              onConfirm: (val) => {
+                input.setAttribute('aria-expanded', 'false');
+              },
+              onOpen: () => {
+                input.setAttribute('aria-expanded', 'true');
+                ul.classList.remove('autocomplete__menu--hidden');
+                const firstOption = ul.querySelector('li');
+                if (firstOption) {
+                  firstOption.setAttribute('tabindex', '-1');
+                  firstOption.focus();
+                }
+              },
+              onClose: () => {
+                input.setAttribute('aria-expanded', 'false');
+                ul.classList.add('autocomplete__menu--hidden');
+                input.focus();
+              }
             });
-          }
-
-          autocompleteElement.reset = () => {
-            if (autocompleteElement.firstChild) {
-              autocompleteElement.firstChild.remove();
-            }
-
-            init('');
           };
 
           init('{{ value }}');
+
+          input.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowDown' && ul.children.length > 0) {
+              event.preventDefault();
+              ul.children[0].focus();
+            }
+          });
+
+          ul.addEventListener('keydown', (event) => {
+            const activeElement = document.activeElement;
+            if (event.key === 'ArrowDown') {
+              event.preventDefault();
+              if (activeElement.nextElementSibling) {
+                activeElement.nextElementSibling.focus();
+              }
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault();
+              if (activeElement.previousElementSibling) {
+                activeElement.previousElementSibling.focus();
+              } else {
+                input.focus();
+              }
+            }
+          });
         });
         </script>
     {% endcall %}
