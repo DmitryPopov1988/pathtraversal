@@ -34,7 +34,6 @@
         {% endfor %}
 
         <div id="{{id}}-container" ctm-autocomplete>
-            <!-- Place the ul immediately after the input for accessibility -->
             <input id="{{ inputId }}" name="{{ config.name }}" type="text" 
                    placeholder="{{ placeholder }}" 
                    class="autocomplete__input autocomplete__input--show-all-values"
@@ -67,6 +66,7 @@
             const listElement = document.querySelector('#{{ inputId }}__listbox');
             const autocompleteElement = document.querySelector('#{{ id }}-container');
 
+            // Ensure that input and list elements are correctly positioned in the DOM.
             const init = (defaultValue) => {
                 accessibleAutocomplete({
                     element: autocompleteElement,
