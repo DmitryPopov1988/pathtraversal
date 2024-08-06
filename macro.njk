@@ -33,27 +33,7 @@
             {% endcall %}
         {% endfor %}
 
-        <div id="{{id}}-container" ctm-autocomplete>
-            <input
-                id="{{ inputId }}"
-                type="text"
-                aria-expanded="false"
-                aria-controls="{{ inputId }}__listbox"
-                aria-autocomplete="list"
-                placeholder="{{ placeholder }}"
-                class="autocomplete__input autocomplete__input--show-all-values"
-                role="combobox"
-            />
-            <ul
-                id="{{ inputId }}__listbox"
-                class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
-                role="listbox"
-                aria-labelledby="{{ inputId }}"
-                aria-describedby="{{ errorMessageId }}"
-            >
-                <!-- List items will be inserted here by the autocomplete script -->
-            </ul>
-        </div>
+        <div id="{{id}}-container" ctm-autocomplete></div>
 
         {% if errorMessage %}
             <p class="error-message" id="{{ errorMessageId }}">
@@ -74,13 +54,15 @@
         <script>
         document.addEventListener("DOMContentLoaded", () => {
           const items = {{ config.options | dump | safe }};
-          const autocompleteElement = document.querySelector('#{{ id }}-container');
-          const input = document.querySelector('#{{ inputId }}');
-          const ul = document.querySelector('#{{ inputId }}__listbox');
+          const container = document.querySelector('#{{ id }}-container');
 
           const init = (defaultValue) => {
+            if (container.querySelector('.autocomplete__input')) {
+              return; // Prevent reinitialization
+            }
+
             accessibleAutocomplete({
-              element: autocompleteElement,
+              element: container,
               id: '{{ inputId }}',
               name: '{{ config.name }}',
               source: items.map(item => item.displayText),
@@ -95,18 +77,22 @@
                 'aria-describedby': '{{ errorMessageId }}'
               },
               onConfirm: (val) => {
+                const input = container.querySelector('input');
                 input.setAttribute('aria-expanded', 'false');
               },
               onOpen: () => {
+                const input = container.querySelector('input');
+                const ul = container.querySelector('ul');
                 input.setAttribute('aria-expanded', 'true');
                 ul.classList.remove('autocomplete__menu--hidden');
-                const firstOption = ul.querySelector('li');
-                if (firstOption) {
-                  firstOption.setAttribute('tabindex', '-1');
-                  firstOption.focus();
+                if (ul.firstChild) {
+                  ul.firstChild.setAttribute('tabindex', '-1');
+                  ul.firstChild.focus();
                 }
               },
               onClose: () => {
+                const input = container.querySelector('input');
+                const ul = container.querySelector('ul');
                 input.setAttribute('aria-expanded', 'false');
                 ul.classList.add('autocomplete__menu--hidden');
                 input.focus();
@@ -115,30 +101,6 @@
           };
 
           init('{{ value }}');
-
-          input.addEventListener('keydown', (event) => {
-            if (event.key === 'ArrowDown' && ul.children.length > 0) {
-              event.preventDefault();
-              ul.children[0].focus();
-            }
-          });
-
-          ul.addEventListener('keydown', (event) => {
-            const activeElement = document.activeElement;
-            if (event.key === 'ArrowDown') {
-              event.preventDefault();
-              if (activeElement.nextElementSibling) {
-                activeElement.nextElementSibling.focus();
-              }
-            } else if (event.key === 'ArrowUp') {
-              event.preventDefault();
-              if (activeElement.previousElementSibling) {
-                activeElement.previousElementSibling.focus();
-              } else {
-                input.focus();
-              }
-            }
-          });
         });
         </script>
     {% endcall %}
