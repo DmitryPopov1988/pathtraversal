@@ -1,6 +1,5 @@
-Template render error: (/Users/dmitry.popov/Documents/code/experience-web.mvc-page/server/shared/views/templates/page.njk) [Line 12, Column 20]
-[0]   Error: Unable to call `question`, which is undefined or falsey
-
+{% from "question/macro.njk" import question with context %}
+{% from "faq/macro.njk" import faq %}
 
 {% macro autocompleteQuestion(config) %}
     {% set id = config.id if config.id else config.name %}
@@ -9,9 +8,9 @@ Template render error: (/Users/dmitry.popov/Documents/code/experience-web.mvc-pa
     {% set questionHeadingId = id + "-heading" %}
     {% set faqId = id + "-faq" %}
     {% set faqIdSecondary = id + "-faq-secondary" %}
-    {% set value = config.value or risk[config.name] %}
-    {% set errorMessage = config.errorMessage or errors[config.name].msg %}
-    {% set placeholder = config.placeholder or "Please select…" %}
+    {% set value=config.value or risk[config.name] %}
+    {% set errorMessage=config.errorMessage or errors[config.name].msg %}
+    {% set placeholder=config.placeholder or "Please select…" %}
     {% set pii = true if not config.pii | safe | length else config.pii %}
 
     {% call question(
@@ -34,7 +33,18 @@ Template render error: (/Users/dmitry.popov/Documents/code/experience-web.mvc-pa
             {% endcall %}
         {% endfor %}
 
-        <div id="{{ id }}-container" ctm-autocomplete></div>
+        <div id="{{id}}-container" ctm-autocomplete>
+            <!-- Place the ul immediately after the input for accessibility -->
+            <input id="{{ inputId }}" name="{{ config.name }}" type="text" 
+                   placeholder="{{ placeholder }}" 
+                   class="autocomplete__input autocomplete__input--show-all-values"
+                   aria-expanded="false" aria-owns="{{ inputId }}__listbox" aria-autocomplete="list"
+                   role="combobox" autocomplete="off">
+            <ul class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
+                id="{{ inputId }}__listbox" role="listbox"
+                aria-labelledby="{{ inputId }}" aria-describedby="{{ errorMessageId }}">
+            </ul>
+        </div>
 
         {% if errorMessage %}
             <p class="error-message" id="{{ errorMessageId }}">
@@ -51,27 +61,54 @@ Template render error: (/Users/dmitry.popov/Documents/code/experience-web.mvc-pa
                 {{ f.answer | safe }}
             {% endcall %}
         {% endfor %}
-
         <script>
         document.addEventListener("DOMContentLoaded", function () {
-          const autocompleteElement = document.querySelector('#{{ id }}-container');
-          if (!autocompleteElement.hasAttribute('data-autocomplete-initialized')) {
-            const items = {{ config.options | dump | safe }};
-            accessibleAutocomplete({
-              element: autocompleteElement,
-              id: '{{ inputId }}',
-              name: '{{ config.name }}',
-              source: items.map(item => item.displayText),
-              showAllValues: true,
-              autoselect: false,
-              enhanceSelectElement: false,
-              displayMenu: 'overlay',
-              defaultValue: '{{ value }}',
-              placeholder: '{{ placeholder }}',
-              menuAttributes: {'aria-labelledby': '{{ inputId }}', 'aria-describedby': '{{ errorMessageId }}'}
+            const inputElement = document.querySelector('#{{ inputId }}');
+            const listElement = document.querySelector('#{{ inputId }}__listbox');
+            const autocompleteElement = document.querySelector('#{{ id }}-container');
+
+            const init = (defaultValue) => {
+                accessibleAutocomplete({
+                    element: autocompleteElement,
+                    id: '{{ inputId }}', // same as labelFor
+                    name: '{{ config.name }}',
+                    source: {{ config.options | dump | safe }},
+                    showAllValues: true,
+                    autoselect: false,
+                    enhanceSelectElement: false,
+                    displayMenu: 'overlay',
+                    defaultValue: defaultValue,
+                    placeholder: '{{ placeholder }}',
+                    menuAttributes: {
+                        'aria-labelledby': '{{ inputId }}', 
+                        'aria-describedby': '{{ errorMessageId }}'
+                    }
+                });
+            };
+
+            inputElement.addEventListener('keydown', function(event) {
+                if (event.key === "ArrowDown") {
+                    event.preventDefault(); // Prevent scrolling
+                    const firstOption = listElement.querySelector('li');
+                    if (firstOption) firstOption.focus(); // Move focus to the first list item
+                }
             });
-            autocompleteElement.setAttribute('data-autocomplete-initialized', 'true');
-          }
+
+            listElement.addEventListener('keydown', function(event) {
+                if (event.key === "ArrowUp" && document.activeElement === listElement.firstChild) {
+                    event.preventDefault();
+                    inputElement.focus(); // Move focus back to the input on pressing 'up' on the first item
+                }
+            });
+
+            autocompleteElement.reset = () => {
+                while (autocompleteElement.firstChild) {
+                    autocompleteElement.firstChild.remove();
+                }
+                init('');
+            };
+
+            init('{{ value }}');
         });
         </script>
     {% endcall %}
