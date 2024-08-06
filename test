@@ -1,88 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Autocomplete Example</title>
-  <style>
-    .autocomplete__menu--hidden {
-      display: none;
-    }
-  </style>
-</head>
-<body>
-  <div id="autocomplete-container">
-    <input aria-expanded="false" aria-controls="my-autocomplete__listbox"
-           aria-autocomplete="list" autocomplete="off"
-           class="autocomplete__input autocomplete__input--show-all-values"
-           id="my-autocomplete" name="my-autocomplete" placeholder="Please select…"
-           type="text" role="combobox">
-    <ul class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
-        id="my-autocomplete__listbox" role="listbox"
-        aria-labelledby="my-autocomplete">
-    </ul>
-  </div>
-  
-  <script src="https://cdn.jsdelivr.net/npm/accessible-autocomplete@2.0.4/dist/accessible-autocomplete.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const input = document.querySelector('#my-autocomplete');
-      const ul = document.querySelector('#my-autocomplete__listbox');
-      const container = document.querySelector('#autocomplete-container');
-
-      accessibleAutocomplete({
-        element: container,
-        id: 'my-autocomplete',
-        name: 'my-autocomplete',
-        source: ['Option 1', 'Option 2', 'Option 3'],
-        showAllValues: true,
-        autoselect: false,
-        defaultValue: '',
-        placeholder: 'Please select…',
-        displayMenu: 'overlay',
-        onConfirm: (val) => {
-          input.setAttribute('aria-expanded', 'false');
-        },
-        onOpen: () => {
-          input.setAttribute('aria-expanded', 'true');
-          ul.classList.remove('autocomplete__menu--hidden');
-          const firstOption = ul.querySelector('li');
-          if (firstOption) {
-            firstOption.setAttribute('tabindex', '-1');
-            firstOption.focus();
-          }
-        },
-        onClose: () => {
-          input.setAttribute('aria-expanded', 'false');
-          ul.classList.add('autocomplete__menu--hidden');
-          input.focus();
-        }
-      });
-
-      input.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowDown' && ul.children.length > 0) {
-          event.preventDefault();
-          ul.children[0].focus();
-        }
-      });
-
-      ul.addEventListener('keydown', (event) => {
-        const activeElement = document.activeElement;
-        if (event.key === 'ArrowDown') {
-          event.preventDefault();
-          if (activeElement.nextElementSibling) {
-            activeElement.nextElementSibling.focus();
-          }
-        } else if (event.key === 'ArrowUp') {
-          event.preventDefault();
-          if (activeElement.previousElementSibling) {
-            activeElement.previousElementSibling.focus();
-          } else {
-            input.focus();
-          }
-        }
-      });
+<link rel="stylesheet" href="https://unpkg.com/accessible-autocomplete@2.0.4/dist/accessible-autocomplete.min.css">
+<script src="https://unpkg.com/accessible-autocomplete@2.0.4/dist/accessible-autocomplete.min.js"></script>
+<div id="autocomplete-container"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    accessibleAutocomplete({
+      element: document.querySelector('#autocomplete-container'),
+      id: 'my-autocomplete', // идентификатор для input
+      name: 'my-autocomplete',
+      source: ['Option 1', 'Option 2', 'Option 3'],
+      showAllValues: true,
+      autoselect: false,
+      defaultValue: '',
+      placeholder: 'Please select…',
+      displayMenu: 'overlay'
     });
-  </script>
-</body>
-</html>
+  });
+</script>
