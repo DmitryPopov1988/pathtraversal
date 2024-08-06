@@ -33,7 +33,26 @@
             {% endcall %}
         {% endfor %}
 
-        <div id="{{id}}-container" ctm-autocomplete></div>
+        <div id="{{id}}-container" ctm-autocomplete>
+            <input
+                id="{{ inputId }}"
+                type="text"
+                aria-expanded="false"
+                aria-owns="{{ inputId }}__listbox"
+                aria-autocomplete="list"
+                autocomplete="off"
+                class="autocomplete__input autocomplete__input--show-all-values"
+                placeholder="{{ placeholder }}"
+                role="combobox"
+            />
+            <ul
+                id="{{ inputId }}__listbox"
+                class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
+                role="listbox"
+                aria-labelledby="{{ inputId }}"
+                aria-describedby="{{ errorMessageId }}"
+            ></ul>
+        </div>
 
         {% if errorMessage %}
             <p class="error-message" id="{{ errorMessageId }}">
@@ -50,15 +69,18 @@
                 {{ f.answer | safe }}
             {% endcall %}
         {% endfor %}
+
         <script>
         document.addEventListener("DOMContentLoaded", () => {
           const items = {{ config.options | dump | safe }};
           const autocompleteElement = document.querySelector('#{{ id }}-container');
+          const input = autocompleteElement.querySelector('input');
+          const ul = autocompleteElement.querySelector('ul');
 
           const init = (defaultValue) => {
             accessibleAutocomplete({
               element: autocompleteElement,
-              id: '{{ inputId }}', // same as labelFor
+              id: '{{ inputId }}',
               name: '{{ config.name }}',
               source: items.map(item => item.displayText),
               showAllValues: true,
@@ -66,17 +88,31 @@
               enhanceSelectElement: false,
               displayMenu: 'overlay',
               defaultValue: defaultValue,
-              placeholder: 'Please select…',
-              menuAttributes: {'aria-labelledby': '{{ inputId }}', 'aria-describedby': '{{ errorMessageId }}'}
+              placeholder: '{{ placeholder }}',
+              menuAttributes: {
+                'aria-labelledby': '{{ inputId }}',
+                'aria-describedby': '{{ errorMessageId }}'
+              },
+              onConfirm: (val) => {
+                input.setAttribute('aria-expanded', 'false');
+                console.log("Confirmed selection: ", val);
+              },
+              onOpen: () => {
+                input.setAttribute('aria-expanded', 'true');
+                ul.classList.remove('autocomplete__menu--hidden');
+                console.log("Dropdown opened.");
+                if (ul.firstChild) {
+                  ul.firstChild.setAttribute('tabindex', '-1');
+                  ul.firstChild.focus();
+                }
+              },
+              onClose: () => {
+                input.setAttribute('aria-expanded', 'false');
+                ul.classList.add('autocomplete__menu--hidden');
+                input.focus();
+                console.log("Dropdown closed.");
+              }
             });
-          }
-
-          autocompleteElement.reset = () => {
-            if (autocompleteElement.firstChild) {
-              autocompleteElement.firstChild.remove();
-            }
-
-            init('');
           };
 
           init('{{ value }}');
