@@ -88,58 +88,60 @@
             {% endcall %}
         {% endfor %}
 
-        <script>
-        document.addEventListener("DOMContentLoaded", () => {
-          const items = {{ config.options | dump | safe }};
-          const container = document.querySelector('#{{ id }}-container');
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const items = {{ config.options | dump | safe }};
+    console.log("Autocomplete items:", items);  // Debugging line to check items
+    const container = document.querySelector('#{{ id }}-container');
 
-          const init = (defaultValue) => {
-            if (container.querySelector('.autocomplete__input')) {
-              return; // Prevent reinitialization
-            }
+    const init = (defaultValue) => {
+      if (container.querySelector('.autocomplete__input')) {
+        return; // Prevent reinitialization
+      }
 
-            accessibleAutocomplete({
-              element: container,
-              id: '{{ inputId }}',
-              name: '{{ config.name }}',
-              source: items.map(item => item.displayText),
-              showAllValues: true,
-              autoselect: false,
-              enhanceSelectElement: false,
-              displayMenu: 'overlay',
-              defaultValue: defaultValue,
-              placeholder: '{{ placeholder }}',
-              menuAttributes: {
-                'aria-labelledby': '{{ inputId }}',
-                'aria-describedby': '{{ errorMessageId }}'
-              },
-              onConfirm: (val) => {
-                const input = container.querySelector('input');
-                input.setAttribute('aria-expanded', 'false');
-              },
-              onOpen: () => {
-                const input = container.querySelector('input');
-                const ul = container.querySelector('ul');
-                input.setAttribute('aria-expanded', 'true');
-                ul.classList.remove('autocomplete__menu--hidden');
-                if (ul.firstChild) {
-                  ul.firstChild.setAttribute('tabindex', '-1');
-                  ul.firstChild.focus();
-                }
-              },
-              onClose: () => {
-                const input = container.querySelector('input');
-                const ul = container.querySelector('ul');
-                input.setAttribute('aria-expanded', 'false');
-                ul.classList.add('autocomplete__menu--hidden');
-                input.focus();
-              }
-            });
-          };
+      accessibleAutocomplete({
+        element: container,
+        id: '{{ inputId }}',
+        name: '{{ config.name }}',
+        source: items.map(item => item.displayText),
+        showAllValues: true,
+        autoselect: false,
+        enhanceSelectElement: false,
+        displayMenu: 'overlay',
+        defaultValue: defaultValue,
+        placeholder: '{{ placeholder }}',
+        menuAttributes: {
+          'aria-labelledby': '{{ inputId }}',
+          'aria-describedby': '{{ errorMessageId }}'
+        },
+        onConfirm: (val) => {
+          const input = container.querySelector('input');
+          input.setAttribute('aria-expanded', 'false');
+        },
+        onOpen: () => {
+          const input = container.querySelector('input');
+          const ul = container.querySelector('ul');
+          input.setAttribute('aria-expanded', 'true');
+          ul.classList.remove('autocomplete__menu--hidden');
+          if (ul.firstChild) {
+            ul.firstChild.setAttribute('tabindex', '-1');
+            ul.firstChild.focus();
+          }
+        },
+        onClose: () => {
+          const input = container.querySelector('input');
+          const ul = container.querySelector('ul');
+          input.setAttribute('aria-expanded', 'false');
+          ul.classList.add('autocomplete__menu--hidden');
+          input.focus();
+        }
+      });
+    };
 
-          init('{{ value }}');
-        });
-        </script>
+    init('{{ value }}');
+  });
+</script>
+
     {% endcall %}
 {% endmacro %}
 
