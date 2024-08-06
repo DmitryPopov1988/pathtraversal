@@ -1,4 +1,4 @@
-<div id="job-title-question-container" ctm-autocomplete="" data-autocomplete-initialized="true">
+<div id="job-title-question-container" ctm-autocomplete="">
   <div class="autocomplete__wrapper">
     <div class="autocomplete__status"
          style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin-bottom: -1px; margin-right: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 1px;">
@@ -16,11 +16,7 @@
     </svg>
     <ul class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
         id="job-title-question-autocomplete__listbox" role="listbox" aria-labelledby="job-title-question-autocomplete"
-        aria-describedby="job-title-question-error">
-      <li aria-selected="false" class="autocomplete__option" id="job-title-question-autocomplete__option--1418"
-          role="option" tabindex="-1" aria-posinset="1419" aria-setsize="1419">Zoology Consultant
-      </li>
-    </ul>
+        aria-describedby="job-title-question-error"></ul>
     <span id="function z(t){if(!t.element)throw new Error(&quot;element is not defined&quot;);if(!t.id)throw new Error(&quot;id is not defined&quot;);if(!t.source)throw new Error(&quot;source is not defined&quot;);Array.isArray(t.source)&amp;&amp;(t.source=G(t.source)),L(u(K,t),t.element)}"
           style="display: none;">When autocomplete results are available use up and down arrows to review and enter to select.  Touch device users, explore by touch or with swipe gestures.</span>
   </div>
