@@ -1,5 +1,3 @@
-Make sure that in the expanding and collapsing content the screen reader cursor travels from the parent control onto the expanded content, but not the next element after the content.
-
 {% from "question/macro.njk" import question with context %}
 {% from "faq/macro.njk" import faq %}
 
@@ -35,13 +33,7 @@ Make sure that in the expanding and collapsing content the screen reader cursor 
             {% endcall %}
         {% endfor %}
 
-        <div id="{{id}}-container" ctm-autocomplete>
-            <!-- Элемент <input> -->
-            <input aria-expanded="false" aria-owns="{{ inputId }}__listbox" aria-autocomplete="list"
-                   autocomplete="off" class="autocomplete__input autocomplete__input--show-all-values"
-                   id="{{ inputId }}" name="{{ config.name }}" placeholder="{{ placeholder }}" type="text"
-                   role="combobox">
-        </div>
+        <div id="{{id}}-container" ctm-autocomplete></div>
 
         {% if errorMessage %}
             <p class="error-message" id="{{ errorMessageId }}">
@@ -61,23 +53,11 @@ Make sure that in the expanding and collapsing content the screen reader cursor 
         <script>
         document.addEventListener("DOMContentLoaded", () => {
           const items = {{ config.options | dump | safe }};
-          const container = document.querySelector('#{{ id }}-container');
-          const input = document.querySelector('#{{ inputId }}');
-          
-          // Создание элемента <ul>
-          const ul = document.createElement('ul');
-          ul.classList.add('autocomplete__menu', 'autocomplete__menu--overlay', 'autocomplete__menu--hidden');
-          ul.setAttribute('id', '{{ inputId }}__listbox');
-          ul.setAttribute('role', 'listbox');
-          ul.setAttribute('aria-labelledby', '{{ inputId }}');
-          ul.setAttribute('aria-describedby', '{{ errorMessageId }}');
-
-          // Вставка <ul> после <input>
-          input.insertAdjacentElement('afterend', ul);
+          const autocompleteElement = document.querySelector('#{{ id }}-container');
 
           const init = (defaultValue) => {
             accessibleAutocomplete({
-              element: container,
+              element: autocompleteElement,
               id: '{{ inputId }}', // same as labelFor
               name: '{{ config.name }}',
               source: items.map(item => item.displayText),
@@ -86,17 +66,16 @@ Make sure that in the expanding and collapsing content the screen reader cursor 
               enhanceSelectElement: false,
               displayMenu: 'overlay',
               defaultValue: defaultValue,
-              placeholder: '{{ placeholder }}',
+              placeholder: 'APOLLO-2503 Please select…',
               menuAttributes: {'aria-labelledby': '{{ inputId }}', 'aria-describedby': '{{ errorMessageId }}'}
             });
           }
 
-          container.reset = () => {
-            while (container.firstChild) {
-              container.removeChild(container.firstChild);
+          autocompleteElement.reset = () => {
+            if (autocompleteElement.firstChild) {
+              autocompleteElement.firstChild.remove();
             }
-            container.appendChild(input);
-            input.insertAdjacentElement('afterend', ul);
+
             init('');
           };
 
