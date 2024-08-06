@@ -1,3 +1,7 @@
+Template render error: (/Users/dmitry.popov/Documents/code/experience-web.mvc-page/server/shared/views/templates/page.njk) [Line 12, Column 20]
+[0]   Error: Unable to call `question`, which is undefined or falsey
+
+
 {% macro autocompleteQuestion(config) %}
     {% set id = config.id if config.id else config.name %}
     {% set inputId = id + "-autocomplete" %}
