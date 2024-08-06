@@ -1,59 +1,149 @@
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const items = {{ config.options | dump | safe }};
-    const autocompleteElement = document.querySelector('#{{ id }}-container');
-    const input = document.createElement('input');
-    input.setAttribute('id', '{{ inputId }}');
-    input.setAttribute('name', '{{ config.name }}');
-    input.setAttribute('type', 'text');
-    input.setAttribute('placeholder', '{{ placeholder }}');
-    input.classList.add('autocomplete__input', 'autocomplete__input--show-all-values');
-    input.setAttribute('role', 'combobox');
-    input.setAttribute('aria-expanded', 'false');
-    input.setAttribute('aria-controls', '{{ inputId }}__listbox');
-    autocompleteElement.appendChild(input);
+{% from "question/macro.njk" import question with context %}
+{% from "faq/macro.njk" import faq %}
 
-    const ul = document.createElement('ul');
-    ul.setAttribute('id', '{{ inputId }}__listbox');
-    ul.setAttribute('role', 'listbox');
-    ul.setAttribute('aria-labelledby', '{{ inputId }}');
-    ul.classList.add('autocomplete__menu', 'autocomplete__menu--overlay', 'autocomplete__menu--hidden');
-    autocompleteElement.appendChild(ul);
+{% macro autocompleteQuestion(config) %}
+    {% set id = config.id if config.id else config.name %}
+    {% set inputId = id + "-autocomplete" %}
+    {% set errorMessageId = id + "-error" %}
+    {% set questionHeadingId = id + "-heading" %}
+    {% set faqId = id + "-faq" %}
+    {% set faqIdSecondary = id + "-faq-secondary" %}
+    {% set value=config.value or risk[config.name] %}
+    {% set errorMessage=config.errorMessage or errors[config.name].msg %}
+    {% set placeholder=config.placeholder or "Please select…" %}
+    {% set pii = true if not config.pii | safe | length else config.pii %}
 
-    const init = (defaultValue) => {
-      accessibleAutocomplete({
-        element: autocompleteElement,
-        id: '{{ inputId }}',
-        name: '{{ config.name }}',
-        source: items.map(item => item.displayText),
-        showAllValues: true,
-        autoselect: false,
-        enhanceSelectElement: false,
-        displayMenu: 'overlay',
-        defaultValue: defaultValue,
-        placeholder: '{{ placeholder }}',
-        menuAttributes: {'aria-labelledby': '{{ inputId }}', 'aria-describedby': '{{ errorMessageId }}'},
-        onConfirm: (val) => {
-          input.setAttribute('aria-expanded', 'false');
-          ul.classList.add('autocomplete__menu--hidden');
-          input.focus();
-        },
-        onOpen: () => {
-          input.setAttribute('aria-expanded', 'true');
-          ul.classList.remove('autocomplete__menu--hidden');
-          if (ul.firstChild) {
-            ul.firstChild.setAttribute('tabindex', '-1');
-            ul.firstChild.focus();
-          }
-        },
-        onClose: () => {
-          input.setAttribute('aria-expanded', 'false');
-          ul.classList.add('autocomplete__menu--hidden');
-          input.focus();
-        }
-      });
-    };
+    {% call question(
+        id=id,
+        heading=config.heading and config.heading | safe,
+        secondaryText=config.secondaryText and config.secondaryText | safe,
+        validity="invalid" if errorMessage,
+        variant=config.variant,
+        labelFor=inputId,
+        hidden=config.hidden,
+        visibilityHidden=config.visibilityHidden
+    ) %}
+        {% for f in config.primaryFaqs %}
+            {% call faq(
+                question=f.question and f.question | safe,
+                id=faqId,
+                ariaDescribedby=questionHeadingId
+            ) %}
+                {{ f.answer | safe }}
+            {% endcall %}
+        {% endfor %}
 
-    init('{{ value }}');
-  });
-</script>
+        <div id="{{id}}-container" ctm-autocomplete>
+            <input
+                id="{{ inputId }}"
+                type="text"
+                aria-expanded="false"
+                aria-controls="{{ inputId }}__listbox"
+                aria-autocomplete="list"
+                placeholder="{{ placeholder }}"
+                class="autocomplete__input autocomplete__input--show-all-values"
+                role="combobox"
+            />
+            <ul
+                id="{{ inputId }}__listbox"
+                class="autocomplete__menu autocomplete__menu--overlay autocomplete__menu--hidden"
+                role="listbox"
+                aria-labelledby="{{ inputId }}"
+                aria-describedby="{{ errorMessageId }}"
+            >
+                <!-- List items will be inserted here by the autocomplete script -->
+            </ul>
+        </div>
+
+        {% if errorMessage %}
+            <p class="error-message" id="{{ errorMessageId }}">
+                {{ errorMessage }}
+            </p>
+        {% endif %}
+
+        {% for f in config.secondaryFaqs %}
+            {% call faq(
+                question=f.question and f.question | safe,
+                id=faqIdSecondary,
+                ariaDescribedby=questionHeadingId
+            ) %}
+                {{ f.answer | safe }}
+            {% endcall %}
+        {% endfor %}
+
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const items = {{ config.options | dump | safe }};
+          const autocompleteElement = document.querySelector('#{{ id }}-container');
+          const input = document.querySelector('#{{ inputId }}');
+          const ul = document.querySelector('#{{ inputId }}__listbox');
+
+          const init = (defaultValue) => {
+            accessibleAutocomplete({
+              element: autocompleteElement,
+              id: '{{ inputId }}',
+              name: '{{ config.name }}',
+              source: items.map(item => item.displayText),
+              showAllValues: true,
+              autoselect: false,
+              enhanceSelectElement: false,
+              displayMenu: 'overlay',
+              defaultValue: defaultValue,
+              placeholder: '{{ placeholder }}',
+              menuAttributes: {
+                'aria-labelledby': '{{ inputId }}',
+                'aria-describedby': '{{ errorMessageId }}'
+              },
+              onConfirm: (val) => {
+                input.setAttribute('aria-expanded', 'false');
+              },
+              onOpen: () => {
+                input.setAttribute('aria-expanded', 'true');
+                ul.classList.remove('autocomplete__menu--hidden');
+                const firstOption = ul.querySelector('li');
+                if (firstOption) {
+                  firstOption.setAttribute('tabindex', '-1');
+                  firstOption.focus();
+                }
+              },
+              onClose: () => {
+                input.setAttribute('aria-expanded', 'false');
+                ul.classList.add('autocomplete__menu--hidden');
+                input.focus();
+              }
+            });
+          };
+
+          init('{{ value }}');
+
+          input.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowDown' && ul.children.length > 0) {
+              event.preventDefault();
+              ul.children[0].focus();
+            }
+          });
+
+          ul.addEventListener('keydown', (event) => {
+            const activeElement = document.activeElement;
+            if (event.key === 'ArrowDown') {
+              event.preventDefault();
+              if (activeElement.nextElementSibling) {
+                activeElement.nextElementSibling.focus();
+              }
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault();
+              if (activeElement.previousElementSibling) {
+                activeElement.previousElementSibling.focus();
+              } else {
+                input.focus();
+              }
+            }
+          });
+        });
+        </script>
+    {% endcall %}
+{% endmacro %}
+
+{% macro render(config) %}
+    {{ autocompleteQuestion(config) }}
+{% endmacro %}
