@@ -1,0 +1,119 @@
+{% from "question/macro.njk" import question with context %}
+{% from "faq/macro.njk" import faq %}
+
+{% macro autocompleteQuestion(config) %}
+    {% set id = config.id if config.id else config.name %}
+    {% set inputId = id + "-autocomplete" %}
+    {% set listboxId = inputId + "-listbox" %}
+    {% set errorMessageId = id + "-error" %}
+    {% set questionHeadingId = id + "-heading" %}
+    {% set faqId = id + "-faq" %}
+    {% set faqIdSecondary = id + "-faq-secondary" %}
+    {% set value = config.value or risk[config.name] %}
+    {% set errorMessage = config.errorMessage or errors[config.name].msg %}
+    {% set placeholder = config.placeholder or "Please select…" %}
+    {% set pii = true if not config.pii | safe | length else config.pii %}
+
+    {% call question(
+        id=id,
+        heading=config.heading and config.heading | safe,
+        secondaryText=config.secondaryText and config.secondaryText | safe,
+        validity="invalid" if errorMessage,
+        variant=config.variant,
+        labelFor=inputId,
+        hidden=config.hidden,
+        visibilityHidden=config.visibilityHidden
+    ) %}
+        {% for f in config.primaryFaqs %}
+            {% call faq(
+                question=f.question and f.question | safe,
+                id=faqId,
+                ariaDescribedby=questionHeadingId
+            ) %}
+                {{ f.answer | safe }}
+            {% endcall %}
+        {% endfor %}
+
+        <div id="{{id}}-container" ctm-autocomplete>
+            {# The input and other elements are initialized here #}
+        </div>
+
+        {% if errorMessage %}
+            <p class="error-message" id="{{ errorMessageId }}">
+                {{ errorMessage }}
+            </p>
+        {% endif %}
+
+        {% for f in config.secondaryFaqs %}
+            {% call faq(
+                question=f.question and f.question | safe,
+                id=faqIdSecondary,
+                ariaDescribedby=questionHeadingId
+            ) %}
+                {{ f.answer | safe }}
+            {% endcall %}
+        {% endfor %}
+
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const items = {{ config.options | dump | safe }};
+            const autocompleteElement = document.querySelector('#{{ id }}-container');
+            const inputElement = document.getElementById('{{ inputId }}');
+            const listboxElement = document.getElementById('{{ listboxId }}');
+
+            const updateAriaAttributes = (menuOpen, selectedOptionId) => {
+                inputElement.setAttribute('aria-expanded', menuOpen);
+                inputElement.setAttribute('aria-activedescendant', selectedOptionId || '');
+                const options = listboxElement.children;
+                Array.from(options).forEach(option => {
+                    option.setAttribute('aria-selected', option.id === selectedOptionId ? 'true' : 'false');
+                });
+            };
+
+            const init = (defaultValue) => {
+                accessibleAutocomplete({
+                    element: autocompleteElement,
+                    id: '{{ inputId }}',
+                    name: '{{ config.name }}',
+                    source: items.map(item => item.displayText),
+                    showAllValues: true,
+                    autoselect: false,
+                    enhanceSelectElement: false,
+                    displayMenu: 'overlay',
+                    defaultValue: defaultValue,
+                    placeholder: 'Please select…',
+                    menuAttributes: {
+                        'aria-labelledby': '{{ inputId }}',
+                        'aria-describedby': '{{ errorMessageId }}'
+                    },
+                    onConfirm: (confirmed) => {
+                        const selectedOption = Array.from(listboxElement.children).find(option => option.textContent === confirmed);
+                        if (selectedOption) {
+                            updateAriaAttributes(true, selectedOption.id);
+                        }
+                    },
+                    onOpen: () => {
+                        updateAriaAttributes(true, '');
+                    },
+                    onClose: () => {
+                        updateAriaAttributes(false, '');
+                    }
+                });
+            };
+
+            autocompleteElement.reset = () => {
+                if (autocompleteElement.firstChild) {
+                    autocompleteElement.firstChild.remove();
+                }
+                init('');
+            };
+
+            init('{{ value }}');
+        });
+        </script>
+    {% endcall %}
+{% endmacro %}
+
+{% macro render(config) %}
+    {{ autocompleteQuestion(config) }}
+{% endmacro %}
