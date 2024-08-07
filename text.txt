@@ -1,0 +1,47 @@
+Where it happened
+This can be seen on pages 9 and 16 on Desktop, Android and iOS, with the custom editable comboboxes with autocomplete
+within the page, such as “What do you/they do for a living?” and “What type of industry do you/they work in?”. These
+comboboxes have the following malformed ARIA:
+The combobox uses aria-owns attribute instead of aria-controls attribute.
+The listbox does not have a permanent accessible name. Instead, it updates to the text typed into the combobox. This
+is because the aria-labelledby attribute uses the id of the combobox, whose value updates according to user
+input.
+The options within the listbox do not update their aria-selected attribute to true when an option is selected.
+Page 9: desktop, custom editable comboboxes with autocomplete
+
+Missing or malformed ARIA on editable combobox (with
+autocomplete)
+Success Criteria 4.1.2: Name, Role, Value [2.0 A]
+Devices Desktop, Mobile (Android), Mobile (iOS)
+Pages Affected 09, 16
+Users Affected Vision
+Component Combobox
+
+
+Recommendation
+Make sure that combobox components are programmatically determined. If possible, use a native <select> element. These
+have out-of-the-box accessibility. If this is not possible, create a combobox with ARIA.
+On the <input> element of the combobox, use role="combobox". Make sure that the <input> is labelled. This can be
+done with <label> or aria-labelledby. For more information, see WAI Tutorials - Labelling Controls.
+Use aria-expanded to differentiate when the listbox is expanded and collapsed. Use the attribute aria-controls to
+identify the element that serves as the popup. Set the aria-autocomplete attribute to the value that corresponds to the
+provided behaviour, such as aria-autocomplete="inline", aria-autocomplete="list" or aria-
+autocomplete="both".
+If the combobox popup element has a role other than listbox, use the aria-haspopup attribute with a value that
+corresponds to the role of its popup.
+On the listbox, use role="listbox". Where possible, expand a list container such as <ul>. Provide a label for the listbox
+via aria-label. On the options, use role="option". Where possible, expand <li>. Use aria-selected to
+differentiate the selected from the unselected options. For example:
+<label for="ex">Country Search</label>
+<input id="ex" type="search" role="combobox"
+aria-activedescendant="01" aria-autocomplete="list"
+aria-expanded="true" aria-controls="results" value="United Kingdom">
+<ul id="results" role="listbox" aria-label="Countries List">
+<li id="01" role="option" aria-selected="true">United Kingdom</li>
+<li id="02" role="option">United States</li>
+...
+</ul>
+Use aria-activedescendant to programmatically determine the active option. This attribute uses the id of the active
+option. This is not strictly required for conformance. However, we strongly encourage you to use this attribute.
+For more information, see WAI ARIA Practices - Combobox andSelect Your Poison.
+
