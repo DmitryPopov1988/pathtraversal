@@ -1,7 +1,10 @@
+{% from "question/macro.njk" import question with context %}
+{% from "faq/macro.njk" import faq %}
+
 {% macro autocompleteQuestion(config) %}
     {% set id = config.id if config.id else config.name %}
     {% set inputId = id + "-autocomplete" %}
-    {% set listboxId = inputId + "-listbox" %}
+    {% set listboxId = id + "-listbox" %}
     {% set errorMessageId = id + "-error" %}
     {% set questionHeadingId = id + "-heading" %}
     {% set faqId = id + "-faq" %}
@@ -65,12 +68,16 @@
               displayMenu: 'overlay',
               defaultValue: defaultValue,
               placeholder: 'Please select…',
-              menuAttributes: {'aria-labelledby': '{{ inputId }}', 'aria-describedby': '{{ errorMessageId }}'},
-              onConfirm: (selectedOption) => {
-                const listbox = document.getElementById('{{ listboxId }}');
-                const options = listbox.querySelectorAll('[role="option"]');
+              menuAttributes: {'aria-labelledby': '{{ listboxId }}', 'aria-describedby': '{{ errorMessageId }}'},
+              onConfirm: (selectedOptionValue) => {
+
+                const ulElement = document.querySelector('ul[aria-labelledby={{ listboxId }}]');
+                const options = ulElement.querySelectorAll('.autocomplete__option');
+
                 options.forEach(option => {
-                  option.setAttribute('aria-selected', option.textContent === selectedOption ? 'true' : 'false');
+                  if(option.textContent === selectedOptionValue) {
+                    option.setAttribute('aria-selected', 'true');
+                  }
                 });
               }
             });
@@ -88,4 +95,8 @@
         });
         </script>
     {% endcall %}
+{% endmacro %}
+
+{% macro render(config) %}
+    {{ autocompleteQuestion(config) }}
 {% endmacro %}
